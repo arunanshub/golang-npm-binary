@@ -1,11 +1,10 @@
-import { defineConfig } from "tsup";
+import { defineConfig } from "tsdown";
 
 export default defineConfig({
   entry: ["src/bin.ts"],
-  format: ["esm"],
+  format: ["cjs", "esm"],
   platform: "node",
   target: "node18",
-  splitting: false,
   sourcemap: false,
   minify: true,
   clean: true,
