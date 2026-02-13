@@ -1,3 +1,5 @@
+set windows-shell := ["pwsh.exe", "-NoLogo", "-Command"]
+
 # Build the go and js binaries for development
 build-dev: build-go-dev sync-binaries-dev build-js
 
@@ -12,15 +14,15 @@ build-js:
 # Sync binaries to packages directory
 sync-binaries:
     go run ./scripts/sync-binaries/ \
-    -artifacts-path=dist/artifacts.json \
-    -packages-path=packages \
+    -artifacts-path dist/artifacts.json \
+    -packages-path packages
 
 # Sync binaries to packages directory for development. Does not fail if a
 # package directory does not exist.
 sync-binaries-dev:
     go run ./scripts/sync-binaries/ \
-    -artifacts-path=dist/artifacts.json \
-    -packages-path=packages \
+    -artifacts-path dist/artifacts.json \
+    -packages-path packages \
     -strict=false
 
 smoke-test:
