@@ -62,6 +62,10 @@ function main() {
     if (signal) process.kill(process.pid, signal);
     process.exit(code ?? 1);
   });
+  child.on("error", (error) => {
+    console.error(`Failed to spawn the binary: ${error}`);
+    process.exit(1);
+  });
 }
 
 main();
