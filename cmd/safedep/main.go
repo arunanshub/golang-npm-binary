@@ -3,12 +3,13 @@ package main
 import (
 	"fmt"
 )
+
 var (
-	Version   = "dev"
-	Arch      = "unknown"
-	Os        = "unknown"
-	Date      = "unknown"
-	Commit    = "unknown"
+	Version = "dev"
+	Arch    = "unknown"
+	Os      = "unknown"
+	Date    = "unknown"
+	Commit  = "unknown"
 )
 
 func main() {
