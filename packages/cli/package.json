@@ -9,8 +9,8 @@
     "dist/**"
   ],
   "optionalDependencies": {
-    "@safedep/cli-linux-x64": "0.0.0",
-    "@safedep/cli-win32-x64": "0.0.0"
+    "@safedep/cli-linux-x64": "workspace:*",
+    "@safedep/cli-win32-x64": "workspace:*"
   },
   "scripts": {
     "build": "tsdown",

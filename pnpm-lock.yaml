@@ -18,7 +18,14 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
-  packages/cli: {}
+  packages/cli:
+    optionalDependencies:
+      '@safedep/cli-linux-x64':
+        specifier: workspace:*
+        version: link:../cli-linux-x64
+      '@safedep/cli-win32-x64':
+        specifier: workspace:*
+        version: link:../cli-win32-x64
 
   packages/cli-linux-x64: {}
 
