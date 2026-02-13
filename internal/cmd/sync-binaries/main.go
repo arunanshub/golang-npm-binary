@@ -12,7 +12,7 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-type Artifact struct {
+type GoreleaserArtifact struct {
 	Path   string `json:"path" validate:"required"`
 	Goos   string `json:"goos" validate:"required"`
 	Goarch string `json:"goarch" validate:"required"`
@@ -47,7 +47,7 @@ func main() {
 		log.Fatalf("Failed to read artifacts.json: %v", err)
 	}
 
-	var artifacts []Artifact
+	var artifacts []GoreleaserArtifact
 	err = json.Unmarshal(artifactsBytes, &artifacts)
 	if err != nil {
 		log.Fatalf("Failed to unmarshal artifacts.json: %v", err)
@@ -57,6 +57,7 @@ func main() {
 
 	for _, artifact := range artifacts {
 		if err := validate.Struct(artifact); err != nil {
+			log.Printf("Invalid artifact: %v", err)
 			continue
 		}
 

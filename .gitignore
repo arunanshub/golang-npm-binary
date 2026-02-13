@@ -4,3 +4,4 @@
 # for npm
 node_modules/
 .turbo/
+**/bin/
