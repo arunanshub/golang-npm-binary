@@ -1,2 +1,5 @@
 # Added by goreleaser init:
-dist/
+**/dist/
+
+# for npm
+node_modules/

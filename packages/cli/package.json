@@ -1,0 +1,19 @@
+{
+  "name": "@safedep/cli",
+  "version": "0.0.0",
+  "type": "module",
+  "bin": {
+    "safedep": "dist/bin.mjs"
+  },
+  "files": [
+    "dist/**"
+  ],
+  "optionalDependencies": {
+    "@safedep/cli-linux-x64": "0.0.0",
+    "@safedep/cli-win32-x64": "0.0.0"
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  }
+}

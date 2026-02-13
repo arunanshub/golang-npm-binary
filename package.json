@@ -1,0 +1,16 @@
+{
+  "name": "golang-npm-binary",
+  "private": true,
+  "version": "0.0.0",
+  "description": "A binary that can be used to deploy a golang application to a npm package",
+  "type": "module",
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^25.2.3",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  },
+  "packageManager": "pnpm@10.28.2"
+}
