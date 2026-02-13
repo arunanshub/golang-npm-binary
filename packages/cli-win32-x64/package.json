@@ -9,5 +9,8 @@
   ],
   "files": [
     "bin/**"
-  ]
+  ],
+  "bin": {
+    "safedep-cli": "bin/safedep.exe"
+  }
 }
