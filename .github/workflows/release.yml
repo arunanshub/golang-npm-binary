@@ -2,8 +2,7 @@ name: Release
 
 on:
   push:
-    branches: [master]
-  workflow_dispatch:  # trigger manually from the Actions UI on any branch
+    tags: ["v*"]
 
 # Never cancel an in-flight release to avoid partial publishes.
 concurrency:
@@ -15,15 +14,13 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     permissions:
-      contents: write        # push git tags, create GitHub releases, push changeset commits
-      pull-requests: write   # changesets/action needs this to open the Version Packages PR
-      id-token: write        # npm provenance
+      contents: write   # create GitHub releases
+      id-token: write   # npm provenance
 
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: pnpm/action-setup@v4
         with:
@@ -42,88 +39,11 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      # Only runs on push events. When changesets exist, creates/updates a
-      # "Version Packages" PR. When no changesets remain (Release PR was merged),
-      # it does nothing. Skipped on workflow_dispatch — no Changesets needed there.
-      - name: Create Release PR (or no-op if no changesets)
-        if: github.event_name == 'push'
-        id: changesets
-        uses: changesets/action@v1
-        with:
-          version: pnpm changeset version
-          title: "chore: release packages"
-          commit: "chore: release packages"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # Two paths lead here:
-      # - workflow_dispatch: always a release (user triggered it intentionally).
-      # - push: only when all changesets have been consumed (the Version Packages
-      #   PR was merged) AND the current version has no git tag yet. Checking the
-      #   tag avoids re-releasing on every push once a version is already out, and
-      #   is robust regardless of how the PR was merged (squash, merge commit, etc.)
-      - name: Detect release trigger
-        id: is-release
-        run: |
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            echo "release=true" >> "$GITHUB_OUTPUT"
-          elif [[ "${{ steps.changesets.outputs.hasChangesets }}" == "false" ]]; then
-            VERSION=$(node -p "require('./packages/cli/package.json').version")
-            TAG="v${VERSION}"
-            if git rev-parse "$TAG" >/dev/null 2>&1; then
-              echo "Tag $TAG already exists, this version is already published"
-              echo "release=false" >> "$GITHUB_OUTPUT"
-            else
-              echo "New version $VERSION ready to release"
-              echo "release=true" >> "$GITHUB_OUTPUT"
-            fi
-          else
-            echo "release=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Read npm version
-        if: steps.is-release.outputs.release == 'true'
-        id: version
-        run: |
-          VERSION=$(node -p "require('./packages/cli/package.json').version")
-          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
-          echo "tag=v${VERSION}" >> "$GITHUB_OUTPUT"
-
-      # Stable versions (1.0.0) publish to "latest".
-      # Pre-release versions (1.0.0-rc.1, 1.0.0-beta.2) publish to their label
-      # so that `npm install @safedep/cli` always resolves to the latest stable.
-      - name: Determine npm dist-tag
-        if: steps.is-release.outputs.release == 'true'
-        id: dist-tag
-        run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          if [[ "$VERSION" =~ -([a-zA-Z]+) ]]; then
-            echo "value=${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
-          else
-            echo "value=latest" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Create and push git tag
-        if: steps.is-release.outputs.release == 'true'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          TAG="${{ steps.version.outputs.tag }}"
-          if git rev-parse "$TAG" >/dev/null 2>&1; then
-            echo "Tag $TAG already exists, skipping creation"
-          else
-            git tag "$TAG"
-            git push origin "$TAG"
-          fi
-
-      # Validate that all package.json files agree on the version and that
-      # the git tag we just pushed matches. This is the final pre-build gate.
+      # All package.json versions must match the tag being released.
       - name: Verify version sync
-        if: steps.is-release.outputs.release == 'true'
         run: go run ./scripts/check-version-sync/ -require-tag
 
       - name: Build and release Go binary
-        if: steps.is-release.outputs.release == 'true'
         uses: goreleaser/goreleaser-action@v6
         with:
           version: latest
@@ -131,25 +51,27 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Copy built binaries from dist/ into each platform package's bin/ dir.
-      # The bin/ dirs are gitignored (build artifacts); --no-git-checks below
-      # is required because pnpm publish would otherwise refuse to run with
-      # untracked files present.
       - name: Sync Go binaries into npm platform packages
-        if: steps.is-release.outputs.release == 'true'
         run: |
           go run ./scripts/sync-binaries/ \
             -artifacts-path dist/artifacts.json \
             -packages-path packages
 
-      # Publish all non-private workspace packages. pnpm skips packages with
-      # "private": true automatically (e.g. the smoke package). New platform
-      # packages added to packages/ are published here with no workflow changes.
-      # --tag uses "latest" for stable releases and the pre-release label
-      # (e.g. "rc", "beta") for pre-releases so that `npm install @safedep/cli`
-      # always resolves to the latest stable version.
+      # v1.0.0      → latest
+      # v1.0.0-rc.1 → rc
+      # v1.0.0-beta → beta
+      - name: Determine npm dist-tag
+        id: dist-tag
+        run: |
+          VERSION="${{ github.ref_name }}"
+          VERSION="${VERSION#v}"
+          if [[ "$VERSION" =~ -([a-zA-Z]+) ]]; then
+            echo "value=${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=latest" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Publish npm packages
-        if: steps.is-release.outputs.release == 'true'
         run: pnpm -r publish --no-git-checks --access public --tag ${{ steps.dist-tag.outputs.value }} --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

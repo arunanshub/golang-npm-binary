@@ -44,13 +44,27 @@ verify: build-dev smoke-test
 changeset:
     pnpm changeset
 
-# Bump package.json versions locally by consuming changesets (does not publish)
+# Bump package.json versions by consuming changesets. Updates CHANGELOG.md too.
+# Run this before `just release` when you have pending changesets.
 version:
     pnpm changeset version
 
+# Commit the version bump, create a git tag, and push to trigger the release CI.
+# Run `just version` first if you have pending changesets.
+release:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    go run ./scripts/check-version-sync/
+    VERSION=$(node -p "require('./packages/cli/package.json').version")
+    git add -A
+    git commit -m "chore: release v${VERSION}"
+    git tag "v${VERSION}"
+    git push
+    git push --tags
+
 # Enter pre-release mode. Subsequent `just version` calls will produce versions
 # like 1.0.0-rc.0, 1.0.0-rc.1, etc. Published with --tag <channel> on npm so
-# that `npm install @safedep/cli` still resolves to the latest stable release.
+# that `npm install @test-pkg-factory/cli` still resolves to the latest stable.
 # Usage: just pre-enter rc   OR   just pre-enter beta
 pre-enter channel:
     pnpm changeset pre enter {{channel}}
