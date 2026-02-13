@@ -3,6 +3,7 @@ name: Release
 on:
   push:
     branches: [master]
+  workflow_dispatch:  # trigger manually from the Actions UI on any branch
 
 # Never cancel an in-flight release to avoid partial publishes.
 concurrency:
@@ -40,12 +41,11 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      # When changesets exist on master, this action creates or updates a
-      # "Version Packages" PR that bumps package.json versions and changelogs.
-      # When no changesets remain (Release PR was merged), it does nothing.
-      # We do NOT pass `publish:` here — publishing happens below after the
-      # Go binary is built and synced into the platform packages.
+      # Only runs on push events. When changesets exist, creates/updates a
+      # "Version Packages" PR. When no changesets remain (Release PR was merged),
+      # it does nothing. Skipped on workflow_dispatch — no Changesets needed there.
       - name: Create Release PR (or no-op if no changesets)
+        if: github.event_name == 'push'
         id: changesets
         uses: changesets/action@v1
         with:
@@ -55,18 +55,23 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # A release commit is identified by two conditions:
-      # 1. No more changesets remain (the Release PR was just merged).
-      # 2. The commit message is the one changesets/action writes on version bump.
-      - name: Detect release commit
+      # Two paths lead here:
+      # - workflow_dispatch: always a release (user triggered it intentionally).
+      # - push: only when the Changesets release PR was just merged (no remaining
+      #   changesets + commit message matches what changesets/action writes).
+      - name: Detect release trigger
         id: is-release
         run: |
-          MSG=$(git log -1 --pretty=%s)
-          if [[ "${{ steps.changesets.outputs.hasChangesets }}" == "false" && \
-                "$MSG" == "chore: release packages" ]]; then
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             echo "release=true" >> "$GITHUB_OUTPUT"
           else
-            echo "release=false" >> "$GITHUB_OUTPUT"
+            MSG=$(git log -1 --pretty=%s)
+            if [[ "${{ steps.changesets.outputs.hasChangesets }}" == "false" && \
+                  "$MSG" == "chore: release packages" ]]; then
+              echo "release=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "release=false" >> "$GITHUB_OUTPUT"
+            fi
           fi
 
       - name: Read npm version
@@ -96,8 +101,13 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag "${{ steps.version.outputs.tag }}"
-          git push origin "${{ steps.version.outputs.tag }}"
+          TAG="${{ steps.version.outputs.tag }}"
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists, skipping creation"
+          else
+            git tag "$TAG"
+            git push origin "$TAG"
+          fi
 
       # Validate that all package.json files agree on the version and that
       # the git tag we just pushed matches. This is the final pre-build gate.
