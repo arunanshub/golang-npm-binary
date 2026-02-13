@@ -15,8 +15,9 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     permissions:
-      contents: write   # push git tags and create GitHub releases
-      id-token: write   # npm provenance
+      contents: write        # push git tags, create GitHub releases, push changeset commits
+      pull-requests: write   # changesets/action needs this to open the Version Packages PR
+      id-token: write        # npm provenance
 
     steps:
       - uses: actions/checkout@v4
