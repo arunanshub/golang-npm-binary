@@ -58,21 +58,27 @@ jobs:
 
       # Two paths lead here:
       # - workflow_dispatch: always a release (user triggered it intentionally).
-      # - push: only when the Changesets release PR was just merged (no remaining
-      #   changesets + commit message matches what changesets/action writes).
+      # - push: only when all changesets have been consumed (the Version Packages
+      #   PR was merged) AND the current version has no git tag yet. Checking the
+      #   tag avoids re-releasing on every push once a version is already out, and
+      #   is robust regardless of how the PR was merged (squash, merge commit, etc.)
       - name: Detect release trigger
         id: is-release
         run: |
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             echo "release=true" >> "$GITHUB_OUTPUT"
-          else
-            MSG=$(git log -1 --pretty=%s)
-            if [[ "${{ steps.changesets.outputs.hasChangesets }}" == "false" && \
-                  "$MSG" == "chore: release packages" ]]; then
-              echo "release=true" >> "$GITHUB_OUTPUT"
-            else
+          elif [[ "${{ steps.changesets.outputs.hasChangesets }}" == "false" ]]; then
+            VERSION=$(node -p "require('./packages/cli/package.json').version")
+            TAG="v${VERSION}"
+            if git rev-parse "$TAG" >/dev/null 2>&1; then
+              echo "Tag $TAG already exists, this version is already published"
               echo "release=false" >> "$GITHUB_OUTPUT"
+            else
+              echo "New version $VERSION ready to release"
+              echo "release=true" >> "$GITHUB_OUTPUT"
             fi
+          else
+            echo "release=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Read npm version
