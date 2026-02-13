@@ -1,0 +1,121 @@
+name: Release
+
+on:
+  push:
+    branches: [master]
+
+# Never cancel an in-flight release to avoid partial publishes.
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # push git tags and create GitHub releases
+      id-token: write   # npm provenance
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - run: pnpm install --frozen-lockfile
+
+      # When changesets exist on master, this action creates or updates a
+      # "Version Packages" PR that bumps package.json versions and changelogs.
+      # When no changesets remain (Release PR was merged), it does nothing.
+      # We do NOT pass `publish:` here — publishing happens below after the
+      # Go binary is built and synced into the platform packages.
+      - name: Create Release PR (or no-op if no changesets)
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          version: pnpm changeset version
+          title: "chore: release packages"
+          commit: "chore: release packages"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # A release commit is identified by two conditions:
+      # 1. No more changesets remain (the Release PR was just merged).
+      # 2. The commit message is the one changesets/action writes on version bump.
+      - name: Detect release commit
+        id: is-release
+        run: |
+          MSG=$(git log -1 --pretty=%s)
+          if [[ "${{ steps.changesets.outputs.hasChangesets }}" == "false" && \
+                "$MSG" == "chore: release packages" ]]; then
+            echo "release=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "release=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Read npm version
+        if: steps.is-release.outputs.release == 'true'
+        id: version
+        run: |
+          VERSION=$(node -p "require('./packages/cli/package.json').version")
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=v${VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Create and push git tag
+        if: steps.is-release.outputs.release == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "${{ steps.version.outputs.tag }}"
+          git push origin "${{ steps.version.outputs.tag }}"
+
+      # Validate that all package.json files agree on the version and that
+      # the git tag we just pushed matches. This is the final pre-build gate.
+      - name: Verify version sync
+        if: steps.is-release.outputs.release == 'true'
+        run: go run ./scripts/check-version-sync/ -require-tag
+
+      - name: Build and release Go binary
+        if: steps.is-release.outputs.release == 'true'
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          version: latest
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Copy built binaries from dist/ into each platform package's bin/ dir.
+      # The bin/ dirs are gitignored (build artifacts); --no-git-checks below
+      # is required because pnpm publish would otherwise refuse to run with
+      # untracked files present.
+      - name: Sync Go binaries into npm platform packages
+        if: steps.is-release.outputs.release == 'true'
+        run: |
+          go run ./scripts/sync-binaries/ \
+            -artifacts-path dist/artifacts.json \
+            -packages-path packages
+
+      # Publish all non-private workspace packages. pnpm skips packages with
+      # "private": true automatically (e.g. the smoke package). New platform
+      # packages added to packages/ are published here with no workflow changes.
+      - name: Publish npm packages
+        if: steps.is-release.outputs.release == 'true'
+        run: pnpm -r publish --no-git-checks --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
