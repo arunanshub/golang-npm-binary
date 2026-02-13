@@ -6,7 +6,7 @@
   "access": "public",
   "baseBranch": "master",
   "fixed": [
-    ["@safedep/cli", "@safedep/cli-linux-x64", "@safedep/cli-win32-x64"]
+    ["@test-pkg-factory/cli", "@test-pkg-factory/cli-linux-x64", "@test-pkg-factory/cli-win32-x64"]
   ],
   "updateInternalDependencies": "patch",
   "ignore": []

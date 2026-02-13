@@ -9,7 +9,7 @@ const require = createRequire(import.meta.url);
 function pkgNameForHost(): string {
   const platform = process.platform; // linux | darwin | win32
   const arch = process.arch; // x64 | arm64
-  return `@safedep/cli-${platform}-${arch}`;
+  return `@test-pkg-factory/cli-${platform}-${arch}`;
 }
 
 function findBinaryPath(pkgName: string): string {

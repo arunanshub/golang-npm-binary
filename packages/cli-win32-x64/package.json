@@ -1,5 +1,5 @@
 {
-  "name": "@safedep/cli-win32-x64",
+  "name": "@test-pkg-factory/cli-win32-x64",
   "version": "0.0.0",
   "repository": {
     "type": "git",
