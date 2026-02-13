@@ -24,4 +24,5 @@ sync-binaries-dev:
     -strict=false
 
 smoke-test:
+    pnpm -C packages/smoke i # ensure the package dep is in sync with the workspace
     pnpm -C packages/smoke exec safedep

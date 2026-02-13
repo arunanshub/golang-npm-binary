@@ -44,7 +44,7 @@ func main() {
 
 	artifactsBytes, err := os.ReadFile(*artifactsPath)
 	if err != nil {
-		log.Fatalf("Failed to read artifacts.json: %v", err)
+		log.Fatalf("Failed to read artifacts.json. Did you run goreleaser build?: %v", err)
 	}
 
 	var artifacts []GoreleaserArtifact
