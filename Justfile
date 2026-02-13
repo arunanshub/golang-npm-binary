@@ -11,14 +11,17 @@ build-js:
 
 # Sync binaries to packages directory
 sync-binaries:
-    go run ./internal/cmd/sync-binaries/ \
+    go run ./scripts/sync-binaries/ \
     -artifacts-path=dist/artifacts.json \
     -packages-path=packages \
 
 # Sync binaries to packages directory for development. Does not fail if a
 # package directory does not exist.
 sync-binaries-dev:
-    go run ./internal/cmd/sync-binaries/ \
+    go run ./scripts/sync-binaries/ \
     -artifacts-path=dist/artifacts.json \
     -packages-path=packages \
     -strict=false
+
+smoke-test:
+    pnpm -C packages/smoke exec safedep
