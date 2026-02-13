@@ -77,6 +77,20 @@ jobs:
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "tag=v${VERSION}" >> "$GITHUB_OUTPUT"
 
+      # Stable versions (1.0.0) publish to "latest".
+      # Pre-release versions (1.0.0-rc.1, 1.0.0-beta.2) publish to their label
+      # so that `npm install @safedep/cli` always resolves to the latest stable.
+      - name: Determine npm dist-tag
+        if: steps.is-release.outputs.release == 'true'
+        id: dist-tag
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          if [[ "$VERSION" =~ -([a-zA-Z]+) ]]; then
+            echo "value=${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=latest" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Create and push git tag
         if: steps.is-release.outputs.release == 'true'
         run: |
@@ -114,8 +128,11 @@ jobs:
       # Publish all non-private workspace packages. pnpm skips packages with
       # "private": true automatically (e.g. the smoke package). New platform
       # packages added to packages/ are published here with no workflow changes.
+      # --tag uses "latest" for stable releases and the pre-release label
+      # (e.g. "rc", "beta") for pre-releases so that `npm install @safedep/cli`
+      # always resolves to the latest stable version.
       - name: Publish npm packages
         if: steps.is-release.outputs.release == 'true'
-        run: pnpm -r publish --no-git-checks --access public
+        run: pnpm -r publish --no-git-checks --access public --tag ${{ steps.dist-tag.outputs.value }} --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

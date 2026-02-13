@@ -1,6 +1,11 @@
 {
   "name": "@safedep/cli",
   "version": "0.0.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arunanshub/golang-npm-binary.git",
+    "directory": "packages/cli"
+  },
   "type": "module",
   "bin": {
     "safedep": "dist/bin.mjs"
