@@ -1,0 +1,8 @@
+{
+  "name": "smoke",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@safedep/cli": "workspace:*"
+  }
+}
