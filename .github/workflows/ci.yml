@@ -57,5 +57,9 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
+      - name: Install GoReleaser CLI
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          install-only: true
       - run: pnpm install --frozen-lockfile
       - run: pnpm run verify
