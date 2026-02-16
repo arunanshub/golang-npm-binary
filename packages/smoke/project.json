@@ -4,7 +4,7 @@
   "root": "packages/smoke",
   "targets": {
     "smoke": {
-      "command": "pnpm -C packages/smoke run smoke",
+      "command": "pnpm -C packages/smoke install --frozen-lockfile && pnpm -C packages/smoke run smoke",
       "cache": false,
       "dependsOn": [
         {
