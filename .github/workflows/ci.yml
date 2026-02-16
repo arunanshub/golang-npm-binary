@@ -37,7 +37,7 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm nx run repo:typecheck
+      - run: pnpm run typecheck
 
   verify:
     name: Build and smoke verify
@@ -58,4 +58,4 @@ jobs:
           go-version-file: go.mod
           cache: true
       - run: pnpm install --frozen-lockfile
-      - run: pnpm nx run repo:verify
+      - run: pnpm run verify

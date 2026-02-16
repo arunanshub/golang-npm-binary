@@ -7,16 +7,12 @@
       "command": "go run ./scripts/sync-binaries/ -artifacts-path dist/artifacts.json -packages-path packages",
       "cache": false
     },
-    "run-dev-existing-dist": {
-      "command": "go run ./scripts/sync-binaries/ -artifacts-path dist/artifacts.json -packages-path packages -strict=false",
+    "run-dev": {
+      "command": "goreleaser build --clean --snapshot && go run ./scripts/sync-binaries/ -artifacts-path dist/artifacts.json -packages-path packages -strict=false",
       "cache": false
     },
     "run": {
       "command": "goreleaser build --clean --snapshot && go run ./scripts/sync-binaries/ -artifacts-path dist/artifacts.json -packages-path packages",
-      "cache": false
-    },
-    "run-dev": {
-      "command": "goreleaser build --clean --snapshot && go run ./scripts/sync-binaries/ -artifacts-path dist/artifacts.json -packages-path packages -strict=false",
       "cache": false
     }
   }

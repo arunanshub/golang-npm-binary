@@ -10,15 +10,15 @@ check-versions-strict:
 
 # TypeScript typecheck
 typecheck:
-    pnpm nx run repo:typecheck
+    pnpm run typecheck
 
 # Build the go and js binaries for development
 build-dev:
-    pnpm nx run repo:build-dev
+    pnpm run build
 
 # Build the go and js binaries for CI/release validation
 build:
-    pnpm nx run repo:build
+    pnpm run build:strict
 
 # Build the go binary for development
 build-go-dev:
@@ -32,16 +32,12 @@ build-js:
 sync-binaries:
     pnpm nx run sync-binaries:run-existing-dist
 
-# Sync binaries to packages directory for development from existing dist artifacts
-sync-binaries-dev:
-    pnpm nx run sync-binaries:run-dev-existing-dist
-
 smoke-test:
-    pnpm nx run smoke-check:run
+    pnpm nx run smoke:smoke
 
 # Full local verification: build everything then run smoke tests
 verify:
-    pnpm nx run repo:verify
+    pnpm run verify
 
 # Create a version plan (Changesets replacement)
 release-plan:
