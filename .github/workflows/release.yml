@@ -41,7 +41,7 @@ jobs:
 
       # All package.json versions must match the tag being released.
       - name: Verify version sync
-        run: go run ./scripts/check-version-sync/ -require-tag
+        run: pnpm nx run check-version-sync:check-strict
 
       - name: Build and release Go binary
         uses: goreleaser/goreleaser-action@v6
@@ -52,10 +52,18 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Sync Go binaries into npm platform packages
+        run: pnpm nx run sync-binaries:run-existing-dist
+
+      # Ensure binary metadata matches the release version
+      - name: Verify Go binary version matches tag
         run: |
-          go run ./scripts/sync-binaries/ \
-            -artifacts-path dist/artifacts.json \
-            -packages-path packages
+          EXPECTED_VERSION="${{ github.ref_name }}"
+          EXPECTED_VERSION="${EXPECTED_VERSION#v}"
+          ACTUAL_VERSION="$(./packages/cli-linux-x64/bin/safedep --version)"
+          if [[ "$ACTUAL_VERSION" != "$EXPECTED_VERSION" ]]; then
+            echo "Version mismatch: expected ${EXPECTED_VERSION}, got ${ACTUAL_VERSION}"
+            exit 1
+          fi
 
       # v1.0.0      → latest
       # v1.0.0-rc.1 → rc
@@ -72,6 +80,8 @@ jobs:
           fi
 
       - name: Publish npm packages
-        run: pnpm -r publish --no-git-checks --access public --tag ${{ steps.dist-tag.outputs.value }} --provenance
+        run: |
+          pnpm -r --filter "@test-pkg-factory/cli-*" publish --no-git-checks --access public --tag ${{ steps.dist-tag.outputs.value }} --provenance
+          pnpm -r --filter "@test-pkg-factory/cli" publish --no-git-checks --access public --tag ${{ steps.dist-tag.outputs.value }} --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

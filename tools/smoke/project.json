@@ -1,0 +1,11 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "smoke-check",
+  "root": "tools/smoke",
+  "targets": {
+    "run": {
+      "command": "pnpm -C packages/smoke install && pnpm -C packages/smoke exec safedep",
+      "cache": false
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "$schema": "./node_modules/nx/schemas/project-schema.json",
+  "name": "safedep-go",
+  "root": ".",
+  "targets": {
+    "build-snapshot": {
+      "command": "goreleaser build --clean --snapshot",
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/cmd/**/*",
+        "{workspaceRoot}/go.mod",
+        "{workspaceRoot}/go.sum",
+        "{workspaceRoot}/.goreleaser.yaml"
+      ],
+      "outputs": ["{workspaceRoot}/dist/**"]
+    }
+  }
+}

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 )
 
 var (
@@ -13,6 +14,14 @@ var (
 )
 
 func main() {
+	if len(os.Args) > 1 {
+		switch os.Args[1] {
+		case "--version", "-v", "version":
+			fmt.Println(Version)
+			return
+		}
+	}
+
 	fmt.Println("Hello, World!")
 	// get data generated from ldflags
 	fmt.Println("Version:", Version)

@@ -5,3 +5,5 @@
 node_modules/
 .turbo/
 **/bin/
+.nx/cache
+.nx/workspace-data

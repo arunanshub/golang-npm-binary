@@ -1,0 +1,63 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "repo",
+  "root": "tools/repo",
+  "targets": {
+    "typecheck": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        {
+          "projects": ["@test-pkg-factory/cli"],
+          "target": "typecheck"
+        }
+      ]
+    },
+    "build": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        {
+          "projects": ["check-version-sync"],
+          "target": "check"
+        },
+        {
+          "projects": ["sync-binaries"],
+          "target": "run"
+        },
+        {
+          "projects": ["@test-pkg-factory/cli"],
+          "target": "build"
+        }
+      ]
+    },
+    "build-dev": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        {
+          "projects": ["check-version-sync"],
+          "target": "check"
+        },
+        {
+          "projects": ["sync-binaries"],
+          "target": "run-dev"
+        },
+        {
+          "projects": ["@test-pkg-factory/cli"],
+          "target": "build"
+        }
+      ]
+    },
+    "verify": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        {
+          "projects": ["repo"],
+          "target": "build"
+        },
+        {
+          "projects": ["smoke-check"],
+          "target": "run"
+        }
+      ]
+    }
+  }
+}

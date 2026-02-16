@@ -2,73 +2,66 @@ set windows-shell := ["pwsh.exe", "-NoLogo", "-Command"]
 
 # Verify all npm package versions are identical (no git tag required)
 check-versions:
-    go run ./scripts/check-version-sync/
+    pnpm nx run check-version-sync:check
 
 # Verify npm package versions match the current git tag on HEAD
 check-versions-strict:
-    go run ./scripts/check-version-sync/ -require-tag
+    pnpm nx run check-version-sync:check-strict
+
+# TypeScript typecheck
+typecheck:
+    pnpm nx run repo:typecheck
 
 # Build the go and js binaries for development
-build-dev: check-versions build-go-dev sync-binaries-dev build-js
+build-dev:
+    pnpm nx run repo:build-dev
+
+# Build the go and js binaries for CI/release validation
+build:
+    pnpm nx run repo:build
 
 # Build the go binary for development
 build-go-dev:
-    goreleaser build --clean --snapshot
+    pnpm nx run safedep-go:build-snapshot
 
 # Build the js cli
 build-js:
-    pnpm turbo build
+    pnpm nx run @test-pkg-factory/cli:build
 
-# Sync binaries to packages directory
+# Sync binaries to packages directory from existing dist artifacts
 sync-binaries:
-    go run ./scripts/sync-binaries/ \
-    -artifacts-path dist/artifacts.json \
-    -packages-path packages
+    pnpm nx run sync-binaries:run-existing-dist
 
-# Sync binaries to packages directory for development. Does not fail if a
-# package directory does not exist.
+# Sync binaries to packages directory for development from existing dist artifacts
 sync-binaries-dev:
-    go run ./scripts/sync-binaries/ \
-    -artifacts-path dist/artifacts.json \
-    -packages-path packages \
-    -strict=false
+    pnpm nx run sync-binaries:run-dev-existing-dist
 
 smoke-test:
-    pnpm -C packages/smoke i # ensure the package dep is in sync with the workspace
-    pnpm -C packages/smoke exec safedep
+    pnpm nx run smoke-check:run
 
 # Full local verification: build everything then run smoke tests
-verify: build-dev smoke-test
+verify:
+    pnpm nx run repo:verify
 
-# Add a changeset describing your change (interactive)
-changeset:
-    pnpm changeset
+# Create a version plan (Changesets replacement)
+release-plan:
+    pnpm nx release plan
 
-# Bump package.json versions by consuming changesets. Updates CHANGELOG.md too.
-# Run this before `just release` when you have pending changesets.
+# Check that touched releasable projects have version plans
+release-plan-check:
+    pnpm nx release plan:check --base=origin/master --head=HEAD
+
+# Bump package versions + create release tag (without publishing)
 version:
-    pnpm changeset version
+    pnpm nx release version --skip-publish
 
-# Commit the version bump, create a git tag, and push to trigger the release CI.
-# Run `just version` first if you have pending changesets.
+# Create prerelease versions like 1.0.0-rc.0 and 1.0.0-beta.0
+pre-version channel:
+    pnpm nx release version prerelease --preid {{channel}} --skip-publish
+
+# Cut a release by versioning and pushing the commit + tag to trigger release CI
 release:
     #!/usr/bin/env bash
     set -euo pipefail
-    go run ./scripts/check-version-sync/
-    VERSION=$(node -p "require('./packages/cli/package.json').version")
-    git add -A
-    git commit -m "chore: release v${VERSION}"
-    git tag "v${VERSION}"
-    git push
-    git push --tags
-
-# Enter pre-release mode. Subsequent `just version` calls will produce versions
-# like 1.0.0-rc.0, 1.0.0-rc.1, etc. Published with --tag <channel> on npm so
-# that `npm install @test-pkg-factory/cli` still resolves to the latest stable.
-# Usage: just pre-enter rc   OR   just pre-enter beta
-pre-enter channel:
-    pnpm changeset pre enter {{channel}}
-
-# Exit pre-release mode. The next `just version` will produce a stable version.
-pre-exit:
-    pnpm changeset pre exit
+    pnpm nx release version --skip-publish
+    git push --follow-tags
