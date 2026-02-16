@@ -1,0 +1,17 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "smoke",
+  "root": "packages/smoke",
+  "targets": {
+    "smoke": {
+      "command": "pnpm -C packages/smoke run smoke",
+      "cache": false,
+      "dependsOn": [
+        {
+          "projects": ["safedep-go"],
+          "target": "build-strict"
+        }
+      ]
+    }
+  }
+}

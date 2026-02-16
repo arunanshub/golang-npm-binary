@@ -13,6 +13,58 @@
         "{workspaceRoot}/.goreleaser.yaml"
       ],
       "outputs": ["{workspaceRoot}/dist/**"]
+    },
+    "typecheck": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        {
+          "projects": ["@test-pkg-factory/cli"],
+          "target": "typecheck"
+        }
+      ]
+    },
+    "build-dev": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        {
+          "projects": ["check-version-sync"],
+          "target": "check"
+        },
+        {
+          "projects": ["sync-binaries"],
+          "target": "run-dev"
+        },
+        {
+          "projects": ["@test-pkg-factory/cli"],
+          "target": "build"
+        }
+      ]
+    },
+    "build-strict": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        {
+          "projects": ["check-version-sync"],
+          "target": "check"
+        },
+        {
+          "projects": ["sync-binaries"],
+          "target": "run"
+        },
+        {
+          "projects": ["@test-pkg-factory/cli"],
+          "target": "build"
+        }
+      ]
+    },
+    "verify": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        {
+          "projects": ["smoke"],
+          "target": "smoke"
+        }
+      ]
     }
   }
 }

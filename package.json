@@ -2,10 +2,10 @@
   "name": "golang-npm-binary",
   "private": true,
   "scripts": {
-    "typecheck": "nx run @test-pkg-factory/cli:typecheck",
-    "build": "nx run check-version-sync:check && nx run sync-binaries:run-dev && nx run @test-pkg-factory/cli:build",
-    "build:strict": "nx run check-version-sync:check && nx run sync-binaries:run && nx run @test-pkg-factory/cli:build",
-    "verify": "pnpm run build:strict && nx run smoke:smoke",
+    "typecheck": "nx run safedep-go:typecheck",
+    "build": "nx run safedep-go:build-dev",
+    "build:strict": "nx run safedep-go:build-strict",
+    "verify": "nx run safedep-go:verify",
     "release:plan": "nx release plan",
     "release:plan:check": "nx release plan:check --base=origin/master --head=HEAD",
     "release:version": "nx release version --skip-publish"
