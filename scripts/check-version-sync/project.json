@@ -1,0 +1,15 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "check-version-sync",
+  "root": "scripts/check-version-sync",
+  "targets": {
+    "check": {
+      "command": "go run ./scripts/check-version-sync/",
+      "cache": false
+    },
+    "check-strict": {
+      "command": "go run ./scripts/check-version-sync/ -require-tag",
+      "cache": false
+    }
+  }
+}

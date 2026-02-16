@@ -2,6 +2,9 @@
   "name": "smoke",
   "private": true,
   "type": "module",
+  "scripts": {
+    "smoke": "safedep"
+  },
   "dependencies": {
     "@test-pkg-factory/cli": "workspace:*"
   }

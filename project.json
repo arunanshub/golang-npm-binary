@@ -1,0 +1,70 @@
+{
+  "$schema": "./node_modules/nx/schemas/project-schema.json",
+  "name": "safedep-go",
+  "root": ".",
+  "targets": {
+    "build-snapshot": {
+      "command": "goreleaser build --clean --snapshot",
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/cmd/**/*",
+        "{workspaceRoot}/go.mod",
+        "{workspaceRoot}/go.sum",
+        "{workspaceRoot}/.goreleaser.yaml"
+      ],
+      "outputs": ["{workspaceRoot}/dist/**"]
+    },
+    "typecheck": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        {
+          "projects": ["@test-pkg-factory/cli"],
+          "target": "typecheck"
+        }
+      ]
+    },
+    "build-dev": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        {
+          "projects": ["check-version-sync"],
+          "target": "check"
+        },
+        {
+          "projects": ["sync-binaries"],
+          "target": "run-dev"
+        },
+        {
+          "projects": ["@test-pkg-factory/cli"],
+          "target": "build"
+        }
+      ]
+    },
+    "build-strict": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        {
+          "projects": ["check-version-sync"],
+          "target": "check"
+        },
+        {
+          "projects": ["sync-binaries"],
+          "target": "run"
+        },
+        {
+          "projects": ["@test-pkg-factory/cli"],
+          "target": "build"
+        }
+      ]
+    },
+    "verify": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        {
+          "projects": ["smoke"],
+          "target": "smoke"
+        }
+      ]
+    }
+  }
+}
