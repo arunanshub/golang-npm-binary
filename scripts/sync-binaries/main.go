@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -98,14 +99,34 @@ func main() {
 		}
 		log.Printf("Copying %s to %s", artifact.Path, binFilePath)
 
-		binFileBytes, err := os.ReadFile(artifact.Path)
-		if err != nil {
-			log.Fatalf("Failed to read artifact: %v", err)
-		}
-
-		err = os.WriteFile(binFilePath, binFileBytes, 0755)
-		if err != nil {
-			log.Fatalf("Failed to write artifact to bin directory: %v", err)
+		if err := copyFile(artifact.Path, binFilePath); err != nil {
+			log.Fatalf("Failed to copy artifact to bin directory: %v", err)
 		}
 	}
+}
+
+func copyFile(src, dst string) error {
+	srcFile, err := os.Open(src)
+	if err != nil {
+		return fmt.Errorf("failed to open source file: %w", err)
+	}
+	defer srcFile.Close()
+
+	dstFile, err := os.Create(dst)
+	if err != nil {
+		return fmt.Errorf("failed to create destination file: %w", err)
+	}
+	defer dstFile.Close()
+
+	_, err = io.Copy(dstFile, srcFile)
+	if err != nil {
+		return fmt.Errorf("failed to copy file: %w", err)
+	}
+
+	// Ensure the destination file has the same permissions as the source file
+	if _, err := os.Stat(dst); err != nil {
+		return fmt.Errorf("failed to verify destination file exists: %w", err)
+	}
+
+	return nil
 }
