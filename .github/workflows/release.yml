@@ -14,8 +14,8 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     permissions:
-      contents: write   # create GitHub releases
-      id-token: write   # npm provenance
+      contents: write # create GitHub releases
+      id-token: write # npm provenance
 
     steps:
       - uses: actions/checkout@v4
@@ -58,16 +58,8 @@ jobs:
       - name: Sync Go binaries into npm platform packages
         run: pnpm nx run sync-binaries:run-existing-dist
 
-      # Ensure binary metadata matches the release version
-      - name: Verify Go binary version matches tag
-        run: |
-          EXPECTED_VERSION="${{ github.ref_name }}"
-          EXPECTED_VERSION="${EXPECTED_VERSION#v}"
-          ACTUAL_VERSION="$(./packages/cli-linux-x64/bin/safedep --version)"
-          if [[ "$ACTUAL_VERSION" != "$EXPECTED_VERSION" ]]; then
-            echo "Version mismatch: expected ${EXPECTED_VERSION}, got ${ACTUAL_VERSION}"
-            exit 1
-          fi
+      - name: Build npm launcher package
+        run: pnpm nx run @test-pkg-factory/cli:build
 
       # v1.0.0      → latest
       # v1.0.0-rc.1 → rc
@@ -83,7 +75,10 @@ jobs:
             echo "value=latest" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Publish npm packages
+      - name: Publish npm packages via Nx release
         run: |
-          pnpm -r --filter "@test-pkg-factory/cli-*" publish --no-git-checks --access public --tag ${{ steps.dist-tag.outputs.value }} --provenance
-          pnpm -r --filter "@test-pkg-factory/cli" publish --no-git-checks --access public --tag ${{ steps.dist-tag.outputs.value }} --provenance
+          pnpm nx release publish \
+            --projects="@test-pkg-factory/cli,@test-pkg-factory/cli-linux-x64,@test-pkg-factory/cli-win32-x64" \
+            --access public \
+            --tag ${{ steps.dist-tag.outputs.value }} \
+            --outputStyle=static

@@ -32,7 +32,9 @@
         "push": false
       }
     },
-    "changelog": false,
+    "changelog": {
+      "workspaceChangelog": false
+    },
     "releaseTag": {
       "pattern": "v{version}"
     }
