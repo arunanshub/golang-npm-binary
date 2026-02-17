@@ -6,9 +6,9 @@
     "build": "nx run safedep-go:build-dev",
     "build:strict": "nx run safedep-go:build-strict",
     "verify": "nx run safedep-go:verify",
-    "release:plan": "nx release plan",
+    "release:plan": "nx release plan --onlyTouched=false",
     "release:plan:check": "nx release plan:check --base=origin/master --head=HEAD",
-    "release:version": "nx release version --skip-publish"
+    "release:version": "nx release version"
   },
   "devDependencies": {
     "@nx/js": "22.5.1",

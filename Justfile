@@ -41,7 +41,7 @@ verify:
 
 # Create a version plan (Changesets replacement)
 release-plan:
-    pnpm nx release plan
+    pnpm nx release plan --onlyTouched=false
 
 # Check that touched releasable projects have version plans
 release-plan-check:
@@ -49,15 +49,15 @@ release-plan-check:
 
 # Bump package versions + create release tag (without publishing)
 version:
-    pnpm nx release version --skip-publish
+    pnpm nx release version
 
 # Create prerelease versions like 1.0.0-rc.0 and 1.0.0-beta.0
 pre-version channel:
-    pnpm nx release version prerelease --preid {{channel}} --skip-publish
+    pnpm nx release version prerelease --preid {{channel}}
 
 # Cut a release by versioning and pushing the commit + tag to trigger release CI
 release:
     #!/usr/bin/env bash
     set -euo pipefail
-    pnpm nx release version --skip-publish
+    pnpm nx release version
     git push --follow-tags
