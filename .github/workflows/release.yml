@@ -28,9 +28,13 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 22.14.0
           cache: pnpm
-          registry-url: https://registry.npmjs.org
+
+      - name: Ensure npm supports trusted publishing
+        run: |
+          npm install -g npm@^11.5.1
+          npm --version
 
       - uses: actions/setup-go@v5
         with:
@@ -83,5 +87,3 @@ jobs:
         run: |
           pnpm -r --filter "@test-pkg-factory/cli-*" publish --no-git-checks --access public --tag ${{ steps.dist-tag.outputs.value }} --provenance
           pnpm -r --filter "@test-pkg-factory/cli" publish --no-git-checks --access public --tag ${{ steps.dist-tag.outputs.value }} --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
