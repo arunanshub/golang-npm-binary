@@ -123,9 +123,20 @@ func copyFile(src, dst string) error {
 		return fmt.Errorf("failed to copy file: %w", err)
 	}
 
+	// sync
+	if err := dstFile.Sync(); err != nil {
+		return fmt.Errorf("failed to sync destination file: %w", err)
+	}
+
 	// Ensure the destination file has the same permissions as the source file
-	if _, err := os.Stat(dst); err != nil {
-		return fmt.Errorf("failed to verify destination file exists: %w", err)
+	srcInfo, err := os.Stat(src)
+	if err != nil {
+		return fmt.Errorf("failed to stat source file: %w", err)
+	}
+
+	err = os.Chmod(dst, srcInfo.Mode())
+	if err != nil {
+		return fmt.Errorf("failed to set permissions on destination file: %w", err)
 	}
 
 	return nil
