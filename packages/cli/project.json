@@ -1,4 +1,10 @@
 {
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "implicitDependencies": ["safedep-go"]
+  "implicitDependencies": ["safedep-go"],
+
+  "targets": {
+    "build": {
+      "dependsOn": ["^build", "safedep-go:sync-binaries"]
+    }
+  }
 }

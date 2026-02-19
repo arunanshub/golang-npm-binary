@@ -13,6 +13,10 @@
     "build": {
       "command": "goreleaser build --clean --snapshot --verbose",
       "inputs": ["default"]
+    },
+    "sync-binaries": {
+      "command": "go run ./scripts/sync-binaries/main.go -artifacts-path ./dist/artifacts.json -packages-path ./packages -strict=false",
+      "dependsOn": ["build"]
     }
   }
 }

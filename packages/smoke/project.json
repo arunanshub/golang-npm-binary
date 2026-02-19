@@ -1,0 +1,15 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+
+  "targets": {
+    "verify": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["^build"],
+      "options": {
+        "commands": ["pnpm i", "pnpm run smoke"],
+        "parallel": false,
+        "cwd": "{projectRoot}"
+      }
+    }
+  }
+}
