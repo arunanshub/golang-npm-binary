@@ -14,6 +14,8 @@ jobs:
       matrix:
         node-version: [24]
 
+    name: Build (with Node.js ${{ matrix.node-version }})
+
     steps:
       - uses: actions/checkout@v4
 
