@@ -4,7 +4,10 @@
 
   "targets": {
     "build": {
-      "dependsOn": ["^build", "safedep-go:sync-binaries"]
+      "dependsOn": ["^sync-binaries"]
+    },
+    "build:prod": {
+      "dependsOn": ["^sync-binaries:prod"]
     }
   }
 }

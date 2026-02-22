@@ -1,10 +1,7 @@
 {
   "name": "golang-npm-binary",
   "private": true,
-  "scripts": {
-    "build": "nx run-many -t build",
-    "verify": "nx run smoke:verify"
-  },
+  "scripts": {},
   "devDependencies": {
     "@nx/js": "22.5.1",
     "@types/node": "^25.2.3",
