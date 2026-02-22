@@ -16,7 +16,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: pnpm/action-setup@v4
 
       - uses: actions/setup-node@v4
@@ -24,6 +24,17 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: pnpm
 
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          version: "~> v2"
+          install-only: true
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
