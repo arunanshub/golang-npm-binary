@@ -4,6 +4,7 @@
   "targets": {
     "install": {
       "command": "pnpm i",
+      "dependsOn": ["^build"],
       "outputs": ["{projectRoot}/node_modules/.bin/*"],
       "cache": true,
       "options": {
@@ -12,7 +13,7 @@
     },
 
     "verify": {
-      "dependsOn": ["^build", "install"],
+      "dependsOn": ["install"],
       "command": "pnpm run smoke",
       "options": {
         "cwd": "{projectRoot}"
