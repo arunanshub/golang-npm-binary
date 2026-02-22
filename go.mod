@@ -3,8 +3,8 @@ module github.com/arunanshub/golang-npm-binary
 go 1.26.0
 
 ignore (
-	./packages/
 	./node_modules/
+	./packages/
 )
 
 require github.com/go-playground/validator/v10 v10.30.1

@@ -5,10 +5,6 @@
   "sourceRoot": ".",
   "projectType": "application",
 
-  "namedInputs": {
-    "default": ["{projectRoot}/**/*.go", "sharedGlobals"]
-  },
-
   "targets": {
     "build": {
       "command": "goreleaser build --clean --snapshot --verbose",
