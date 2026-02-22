@@ -15,10 +15,10 @@
       "inputs": ["go-files"]
     },
     "build:prod": {
-      "command": "goreleaser build --clean --verbose",
+      "command": "goreleaser release --clean --verbose",
       "inputs": ["go-files"]
     },
-    
+
     "sync-binaries": {
       "command": "go run ./scripts/sync-binaries/main.go -artifacts-path ./dist/artifacts.json -packages-path ./packages -strict=false",
       "dependsOn": ["build"]
