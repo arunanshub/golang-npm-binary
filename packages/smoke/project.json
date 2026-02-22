@@ -2,12 +2,16 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
 
   "targets": {
+    "install": {
+      "command": "pnpm i",
+      "outputs": ["{projectRoot}/node_modules/.bin/*"],
+      "cache": true
+    },
+
     "verify": {
-      "executor": "nx:run-commands",
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "install"],
+      "command": "pnpm run smoke",
       "options": {
-        "commands": ["pnpm i", "pnpm run smoke"],
-        "parallel": false,
         "cwd": "{projectRoot}"
       }
     }
