@@ -5,7 +5,10 @@
     "install": {
       "command": "pnpm i",
       "outputs": ["{projectRoot}/node_modules/.bin/*"],
-      "cache": true
+      "cache": true,
+      "options": {
+        "cwd": "{projectRoot}"
+      }
     },
 
     "verify": {
