@@ -7,59 +7,28 @@ on:
     branches: [master]
 
 jobs:
-  release-plan-check:
-    name: Check release plans
+  build:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10.28.2
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm nx release plan:check --base=origin/master --head=HEAD
 
-  typecheck:
-    name: TypeScript typecheck
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10.28.2
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm run typecheck
+    strategy:
+      matrix:
+        node-version: [24]
 
-  verify:
-    name: Build and smoke verify
-    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10.28.2
+
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: ${{ matrix.node-version }}
           cache: pnpm
-      - uses: actions/setup-go@v5
-        with:
-          go-version-file: go.mod
-          cache: true
-      - name: Install GoReleaser CLI
-        uses: goreleaser/goreleaser-action@v6
-        with:
-          install-only: true
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm run verify
+
+      - uses: pnpm/action-setup@v4
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint and Typecheck
+        run: pnpm nx run-many -t typecheck
+
+      - name: Build and Verify
+        run: pnpm nx run-many -t build verify
