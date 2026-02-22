@@ -4,7 +4,8 @@
   "parallel": 4,
 
   "namedInputs": {
-    "default": ["{projectRoot}/**/*", "sharedGlobals"],
+    "go-files": ["{projectRoot}/**/*.go", "sharedGlobals"],
+    "ts-files": ["{projectRoot}/**/*.{ts,js}", "sharedGlobals"],
     "sharedGlobals": [
       "{workspaceRoot}/go.mod",
       "{workspaceRoot}/go.sum",

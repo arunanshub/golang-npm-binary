@@ -12,11 +12,11 @@
   "targets": {
     "build": {
       "command": "goreleaser build --clean --snapshot --verbose",
-      "inputs": ["default"]
+      "inputs": ["go-files"]
     },
     "build:prod": {
       "command": "goreleaser build --clean --verbose",
-      "inputs": ["default"]
+      "inputs": ["go-files"]
     },
     
     "sync-binaries": {
