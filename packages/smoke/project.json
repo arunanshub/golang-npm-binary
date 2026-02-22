@@ -1,17 +1,23 @@
 {
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "name": "smoke",
-  "root": "packages/smoke",
+
   "targets": {
-    "smoke": {
-      "command": "pnpm -C packages/smoke install --frozen-lockfile && pnpm -C packages/smoke run smoke",
-      "cache": false,
-      "dependsOn": [
-        {
-          "projects": ["safedep-go"],
-          "target": "build-strict"
-        }
-      ]
+    "install": {
+      "command": "pnpm i",
+      "dependsOn": ["^build"],
+      "outputs": ["{projectRoot}/node_modules/.bin/*"],
+      "cache": true,
+      "options": {
+        "cwd": "{projectRoot}"
+      }
+    },
+
+    "verify": {
+      "dependsOn": ["install"],
+      "command": "pnpm run smoke",
+      "options": {
+        "cwd": "{projectRoot}"
+      }
     }
   }
 }

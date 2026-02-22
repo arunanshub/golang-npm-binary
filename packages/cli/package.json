@@ -8,7 +8,7 @@
   },
   "type": "module",
   "bin": {
-    "safedep": "dist/bin.mjs"
+    "safedep": "dist/bin.cjs"
   },
   "files": [
     "dist/**"

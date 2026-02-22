@@ -2,69 +2,26 @@
   "$schema": "./node_modules/nx/schemas/project-schema.json",
   "name": "safedep-go",
   "root": ".",
+  "sourceRoot": ".",
+  "projectType": "application",
+
   "targets": {
-    "build-snapshot": {
-      "command": "goreleaser build --clean --snapshot",
-      "cache": true,
-      "inputs": [
-        "{workspaceRoot}/cmd/**/*",
-        "{workspaceRoot}/go.mod",
-        "{workspaceRoot}/go.sum",
-        "{workspaceRoot}/.goreleaser.yaml"
-      ],
-      "outputs": ["{workspaceRoot}/dist/**"]
+    "build": {
+      "command": "goreleaser build --clean --snapshot --verbose",
+      "inputs": ["go-files"]
     },
-    "typecheck": {
-      "executor": "nx:noop",
-      "dependsOn": [
-        {
-          "projects": ["@test-pkg-factory/cli"],
-          "target": "typecheck"
-        }
-      ]
+    "build:prod": {
+      "command": "goreleaser release --clean --verbose",
+      "inputs": ["go-files"]
     },
-    "build-dev": {
-      "executor": "nx:noop",
-      "dependsOn": [
-        {
-          "projects": ["check-version-sync"],
-          "target": "check"
-        },
-        {
-          "projects": ["sync-binaries"],
-          "target": "run-dev"
-        },
-        {
-          "projects": ["@test-pkg-factory/cli"],
-          "target": "build"
-        }
-      ]
+
+    "sync-binaries": {
+      "command": "go run ./scripts/sync-binaries/main.go -artifacts-path ./dist/artifacts.json -packages-path ./packages -strict=false",
+      "dependsOn": ["build"]
     },
-    "build-strict": {
-      "executor": "nx:noop",
-      "dependsOn": [
-        {
-          "projects": ["check-version-sync"],
-          "target": "check"
-        },
-        {
-          "projects": ["sync-binaries"],
-          "target": "run"
-        },
-        {
-          "projects": ["@test-pkg-factory/cli"],
-          "target": "build"
-        }
-      ]
-    },
-    "verify": {
-      "executor": "nx:noop",
-      "dependsOn": [
-        {
-          "projects": ["smoke"],
-          "target": "smoke"
-        }
-      ]
+    "sync-binaries:prod": {
+      "command": "go run ./scripts/sync-binaries/main.go -artifacts-path ./dist/artifacts.json -packages-path ./packages",
+      "dependsOn": ["build:prod"]
     }
   }
 }
