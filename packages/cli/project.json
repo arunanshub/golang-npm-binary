@@ -5,11 +5,11 @@
   "targets": {
     "build": {
       "dependsOn": ["^sync-binaries"],
-      "inputs": ["ts-files"]
+      "inputs": ["^ts-files"]
     },
     "build:prod": {
       "dependsOn": ["^sync-binaries:prod"],
-      "inputs": ["ts-files"]
+      "inputs": ["^ts-files"]
     }
   }
 }

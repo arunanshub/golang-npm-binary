@@ -5,7 +5,8 @@
     "install": {
       "command": "pnpm i",
       "dependsOn": ["^build"],
-      "outputs": ["{projectRoot}/node_modules/.bin/*"],
+      "inputs": ["^go-files", "^ts-files"],
+      "outputs": ["{projectRoot}/node_modules"],
       "cache": true,
       "options": {
         "cwd": "{projectRoot}"
