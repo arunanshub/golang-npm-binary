@@ -36,7 +36,7 @@ jobs:
           npm install -g npm@^11.5.1
           npm --version
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
           cache: true
