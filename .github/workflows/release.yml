@@ -48,7 +48,7 @@ jobs:
         run: pnpm nx run check-version-sync:check-strict
 
       - name: Build and release Go binary
-        uses: goreleaser/goreleaser-action@v6
+        uses: goreleaser/goreleaser-action@v7
         with:
           version: latest
           args: release --clean
